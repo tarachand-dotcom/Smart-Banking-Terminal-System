@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ATM Banking System
 
 A Flask-based ATM and banking management web application that allows users to create or access accounts, deposit and withdraw funds, view transaction history, change PINs, and manage account access from an admin panel.
@@ -120,3 +121,7 @@ python main.py
 ## License
 
 This project is intended for educational and learning purposes.
+=======
+# Smart-Banking-Terminal-System
+A Flask-powered banking simulation featuring account management, authentication, transaction processing, and transaction history, built with Python .
+>>>>>>> 769e55a5e6653bf1f092c22aecf2a75b94f84c97
