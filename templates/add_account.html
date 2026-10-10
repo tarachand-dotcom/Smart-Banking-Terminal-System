@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate New Account - Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content admin-header-content">
+      <h1><i class="fas fa-user-plus"></i> Generate New Account</h1>
+      <a href="{{ url_for('admin_dashboard') }}" class="btn-logout-corner">
+        <i class="fas fa-arrow-left"></i> Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="form-container">
+      <h2><i class="fas fa-id-card"></i> Account Registration & Access Generator</h2>
+      <p class="form-subtitle">Generate a new bank account with custom or automated credentials.</p>
+
+      <form method="POST" action="{{ url_for('add_account') }}" class="transaction-form">
+        <!-- Account Number Field with Generator -->
+        <div class="form-group">
+          <label for="accNoInput"><i class="fas fa-hashtag"></i> Account Number</label>
+          <div class="input-with-action">
+            <input
+              type="text"
+              id="accNoInput"
+              name="acc_no"
+              value="{{ suggested_acc_no }}"
+              placeholder="e.g. ACC1006"
+              required
+            />
+            <button type="button" class="btn-secondary btn-inline" onclick="fetchNextAccountNumber()">
+              <i class="fas fa-magic"></i> Auto-Generate
+            </button>
+          </div>
+          <small class="field-hint">Next suggested account number: <strong>{{ suggested_acc_no }}</strong></small>
+        </div>
+
+        <!-- Holder Name -->
+        <div class="form-group">
+          <label for="holderNameInput"><i class="fas fa-user"></i> Account Holder Full Name</label>
+          <input
+            type="text"
+            id="holderNameInput"
+            name="holder_name"
+            placeholder="e.g. Tarachand Sharma"
+            required
+          />
+        </div>
+
+        <!-- Initial Deposit -->
+        <div class="form-group">
+          <label for="initialDepositInput"><i class="fas fa-wallet"></i> Initial Opening Deposit (₹)</label>
+          <input
+            type="number"
+            id="initialDepositInput"
+            name="initial_deposit"
+            min="0"
+            step="1"
+            value="0"
+            placeholder="0"
+          />
+          <small class="field-hint">Opening balance credited to this account immediately.</small>
+        </div>
+
+        <!-- PIN Access Configuration -->
+        <div class="form-group pin-config-group">
+          <label><i class="fas fa-key"></i> Initial Account Access Mode</label>
+          <div class="radio-options">
+            <label class="radio-card">
+              <input type="radio" name="pin_option" value="require_setup" checked onchange="togglePinInput(false)">
+              <div class="radio-content">
+                <strong><i class="fas fa-user-lock"></i> User Generates PIN on First Login</strong>
+                <p>User will be prompted to create their 4-digit PIN when logging in.</p>
+              </div>
+            </label>
+
+            <label class="radio-card">
+              <input type="radio" name="pin_option" value="direct_pin" onchange="togglePinInput(true)">
+              <div class="radio-content">
+                <strong><i class="fas fa-shield-alt"></i> Assign 4-Digit Temporary PIN Directly</strong>
+                <p>Admin sets a temporary PIN immediately for the customer.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Direct PIN input box (hidden by default) -->
+        <div class="form-group" id="directPinContainer" style="display: none;">
+          <label for="autoPinInput"><i class="fas fa-lock"></i> 4-Digit PIN</label>
+          <div class="input-with-action">
+            <input
+              type="text"
+              id="autoPinInput"
+              name="auto_pin"
+              maxlength="4"
+              pattern="\d{4}"
+              placeholder="e.g. 4321"
+            />
+            <button type="button" class="btn-secondary btn-inline" onclick="generateRandomPin()">
+              <i class="fas fa-dice"></i> Random PIN
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full">
+          <i class="fas fa-check-circle"></i> Create & Generate Account
+        </button>
+
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-back">
+          <i class="fas fa-arrow-left"></i> Cancel & Back
+        </a>
+      </form>
+    </div>
+  </main>
+
+  <div id="flash-container" class="flash-popup-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-popup {{ category }}">
+      <span>{{ message }}</span>
+      <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <script>
+    function togglePinInput(show) {
+      const container = document.getElementById('directPinContainer');
+      const input = document.getElementById('autoPinInput');
+      if (show) {
+        container.style.display = 'block';
+        if (!input.value) {
+          generateRandomPin();
+        }
+      } else {
+        container.style.display = 'none';
+        input.value = '';
+      }
+    }
+
+    function generateRandomPin() {
+      const pin = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('autoPinInput').value = pin;
+    }
+
+    function fetchNextAccountNumber() {
+      fetch('{{ url_for("next_account_number") }}')
+        .then(response => response.json())
+        .then(data => {
+          if (data.next_acc_no) {
+            document.getElementById('accNoInput').value = data.next_acc_no;
+          }
+        })
+        .catch(err => console.error('Error fetching account number:', err));
+    }
+  </script>
+</body>
+
+</html>

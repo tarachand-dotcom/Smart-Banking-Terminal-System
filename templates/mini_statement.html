@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Statement - ATM System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content">
+      <h1><i class="fas fa-university"></i> ATM System</h1>
+      
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="recent-transactions">
+      <div class="mini-heading-box">
+        <h2><i class="fas fa-file-invoice-dollar"></i> Mini Statement</h2>
+      </div>
+      <a href="{{ url_for('user_dashboard') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Back</a>
+
+      <div class="transaction-list">
+        {% for t in transactions %}
+        <div class="transaction-card">
+          <div class="transaction-header">
+            <span class="transaction-type {{ t.type|lower }}">
+              <i class="fas {% if t.type == 'Deposit' %}fa-arrow-down{% else %}fa-arrow-up{% endif %}"></i>
+              {{ t.type }}
+            </span>
+            <span class="transaction-amount">₹{{ t.amount }}</span>
+          </div>
+          <div class="transaction-details">
+            <p><strong>Date & Time:</strong> {{ t.timestamp or t.time }}</p>
+            <p><strong>Balance After:</strong> ₹{{ t.balance_after }}</p>
+            <p><strong>Note:</strong> {{ t.note }}</p>
+          </div>
+        </div>
+        {% else %}
+        <p class="no-transactions">No transactions found.</p>
+        {% endfor %}
+      </div>
+
+    </div>
+  </main>
+  <div id="flash-container" class="flash-popup-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-popup {{ category }}">
+      <span>{{ message }}</span>
+      <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+</body>
+
+</html>

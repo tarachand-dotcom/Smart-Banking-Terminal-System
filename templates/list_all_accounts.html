@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Accounts</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>📄 All Accounts</h1>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="accounts-list-section">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn-back">← Back</a>
+            {% if accounts %}
+            {% for acc_no, details in accounts.items() %}
+            <div class="account-item">
+                <div>
+                    <strong>Account No:</strong> {{ acc_no }}<br>
+                    <strong>Holder:</strong> {{ details.holder_name or details['holder_name'] }}<br>
+                    <strong>Balance:</strong> ₹{{ details.balance or details['balance'] }}<br>
+                    <strong>New User ? : </strong> {% if details.get('new_acc') %}Yes{% else %}No{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p>No accounts found.</p>
+            {% endif %}
+
+        </div>
+    </main>
+    <div id="flash-container" class="flash-popup-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-popup {{ category }}">
+            <span>{{ message }}</span>
+            <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+</body>
+
+</html>

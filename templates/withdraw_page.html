@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Withdraw - ATM System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content">
+      <h1><i class="fas fa-university"></i> ATM System</h1>
+      <span class="user-pill"><i class="fas fa-user-circle"></i> {{ account.holder_name }} ({{ account.acc_no }})</span>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="form-container">
+      <h2><i class="fas fa-money-bill-wave"></i> Cash Withdrawal</h2>
+
+      <!-- Limits & Balance Info -->
+      <div class="account-summary-bar">
+        <div class="summary-pill">
+          <span class="pill-label">Available Balance:</span>
+          <span class="pill-val">₹{{ "%.2f"|format(account.balance) }}</span>
+        </div>
+        <div class="summary-pill limit-pill">
+          <span class="pill-label"><i class="fas fa-shield-alt"></i> Limit:</span>
+          <span class="pill-val">₹{{ min_limit|int }} — ₹{{ "{:,}".format(max_limit|int) }}</span>
+        </div>
+      </div>
+
+      <!-- Live Inserted / Dispense Amount Display -->
+      <div class="inserted-amount-box withdraw-box" id="withdrawSlotBox">
+        <div class="inserted-header">
+          <i class="fas fa-hand-holding-usd"></i> Requested Withdrawal Amount
+        </div>
+        <div class="inserted-value" id="displayWithdrawAmount">₹0.00</div>
+        <div class="inserted-feedback" id="withdrawFeedback">Enter amount between ₹{{ min_limit|int }} and ₹{{ "{:,}".format(max_limit|int) }}</div>
+      </div>
+
+      <form method="POST" action="{{ url_for('withdraw_page') }}" class="transaction-form" id="withdrawForm">
+        <div class="form-group">
+          <label for="withdrawInput"><i class="fas fa-keyboard"></i> Enter Amount to Withdraw</label>
+          <input
+            type="number"
+            id="withdrawInput"
+            name="amount"
+            min="{{ min_limit|int }}"
+            max="{{ max_limit|int }}"
+            step="1"
+            placeholder="e.g. 500"
+            required
+            autocomplete="off"
+            oninput="updateWithdrawDisplay(this.value)"
+          />
+        </div>
+
+        <button type="submit" class="btn-primary btn-full" id="withdrawSubmitBtn">
+          <i class="fas fa-arrow-circle-up"></i> Confirm & Withdraw Cash
+        </button>
+
+        <div class="quick-amounts">
+          <h4><i class="fas fa-bolt"></i> Quick Cash Dispense</h4>
+          <div class="amount-buttons">
+            <button type="button" class="amount-btn" onclick="setWithdrawAmount(500)">₹500</button>
+            <button type="button" class="amount-btn" onclick="setWithdrawAmount(1000)">₹1,000</button>
+            <button type="button" class="amount-btn" onclick="setWithdrawAmount(2000)">₹2,000</button>
+            <button type="button" class="amount-btn" onclick="setWithdrawAmount(5000)">₹5,000</button>
+            <button type="button" class="amount-btn" onclick="setWithdrawAmount(10000)">₹10,000</button>
+          </div>
+        </div>
+
+        <a href="{{ url_for('user_dashboard') }}" class="btn-back">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </form>
+    </div>
+  </main>
+
+  <div id="flash-container" class="flash-popup-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-popup {{ category }}">
+      <span>{{ message }}</span>
+      <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <script>
+    const MIN_LIMIT = {{ min_limit }};
+    const MAX_LIMIT = {{ max_limit }};
+    const CURRENT_BALANCE = {{ account.balance }};
+
+    function setWithdrawAmount(value) {
+      const input = document.getElementById('withdrawInput');
+      input.value = value;
+      updateWithdrawDisplay(value);
+    }
+
+    function updateWithdrawDisplay(val) {
+      const display = document.getElementById('displayWithdrawAmount');
+      const feedback = document.getElementById('withdrawFeedback');
+      const box = document.getElementById('withdrawSlotBox');
+      const num = parseFloat(val);
+
+      if (isNaN(num) || num <= 0) {
+        display.innerText = '₹0.00';
+        feedback.innerText = 'Enter amount between ₹' + MIN_LIMIT.toLocaleString('en-IN') + ' and ₹' + MAX_LIMIT.toLocaleString('en-IN');
+        feedback.style.color = '#777';
+        box.classList.remove('valid', 'invalid');
+        return;
+      }
+
+      display.innerText = '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      if (num < MIN_LIMIT) {
+        feedback.innerText = '⚠️ Below minimum withdrawal limit (Min: ₹' + MIN_LIMIT.toLocaleString('en-IN') + ')';
+        feedback.style.color = '#e74c3c';
+        box.classList.remove('valid');
+        box.classList.add('invalid');
+      } else if (num > MAX_LIMIT) {
+        feedback.innerText = '⚠️ Exceeds per-transaction limit (Max: ₹' + MAX_LIMIT.toLocaleString('en-IN') + ')';
+        feedback.style.color = '#e74c3c';
+        box.classList.remove('valid');
+        box.classList.add('invalid');
+      } else if (num > CURRENT_BALANCE) {
+        feedback.innerText = '❌ Insufficient balance! (Available: ₹' + CURRENT_BALANCE.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + ')';
+        feedback.style.color = '#e74c3c';
+        box.classList.remove('valid');
+        box.classList.add('invalid');
+      } else {
+        feedback.innerText = '✅ Valid withdrawal amount. Remaining balance after dispense: ₹' + (CURRENT_BALANCE - num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        feedback.style.color = '#27ae60';
+        box.classList.remove('invalid');
+        box.classList.add('valid');
+      }
+    }
+  </script>
+</body>
+
+</html>

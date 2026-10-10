@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content admin-header-content">
+            <h1>⚙️ Admin Dashboard</h1>
+            <a href="{{ url_for('admin_logout') }}" class="btn-logout-corner">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </header>
+
+
+
+
+    <main class="main-content">
+        <section class="admin-stats">
+            <!-- <div class=""></div> -->
+            <div class="stat-card">
+                <h3>Total Accounts</h3>
+                <p class="stat-number">{{ total_accounts }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Balance</h3>
+                <p class="stat-number">₹{{ total_balance }}</p>
+            </div>
+        </section>
+
+        <section class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="actions-grid">
+                <a href="{{ url_for('add_account') }}" class="btn-primary btn-full">➕ Generate New Account</a>
+                <a href="{{ url_for('admin_generate_access') }}" class="btn-secondary btn-full">🔑 Manage / Generate Access</a>
+                <a href="{{ url_for('list_accounts') }}" class="btn-secondary btn-full">📄 List All Accounts</a>
+                <a href="{{ url_for('remove_account') }}" class="btn-danger btn-full">🗑️ Remove Account</a>
+            </div>
+        </section>
+    </main>
+    <div id="flash-container" class="flash-popup-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-popup {{ category }}">
+            <span>{{ message }}</span>
+            <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+</body>
+
+</html>

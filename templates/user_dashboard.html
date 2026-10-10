@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Dashboard - ATM System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content">
+      <h1><i class="fas fa-university"></i> ATM System</h1>
+    </div>
+    <div class="user-info-container">
+      <h2 class="welcome-center">Welcome, <strong>{{ account.holder_name }}</strong></h2>
+      <a href="{{ url_for('user_logout') }}" class="btn-logout-corner">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="dashboard-header">
+      <h2>Account Dashboard</h2>
+      <div class="balance-card">
+        <h3>Current Balance</h3>
+        <div class="balance-amount">₹{{ account.balance }}</div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <h3>Quick Actions</h3>
+      <div class="actions-grid">
+        <a href="{{ url_for('deposit_page') }}" class="action-btn">
+          <i class="fas fa-coins"></i> Deposit
+        </a>
+        <a href="{{ url_for('withdraw_page') }}" class="action-btn">
+          <i class="fas fa-money-bill-wave"></i> Withdraw
+        </a>
+        <a href="{{ url_for('change_pin_page') }}" class="action-btn">
+          <i class="fas fa-key"></i> Change PIN
+        </a>
+        <a href="{{ url_for('mini_statement') }}" class="action-btn">
+          <i class="fas fa-file-invoice-dollar"></i> Mini Statement
+        </a>
+        <a href="{{ url_for('user_dashboard_full_transactions') }}" class="action-btn">
+          <i class="fas fa-list"></i> All Transactions
+        </a>
+      </div>
+    </div>
+    <div class="dashboard-header">
+      <h2>Recent Transactions</h2>
+
+      {% if transactions %}
+      {% for t in transactions %}
+      <div class="transaction-card">
+        <div class="transaction-header">
+          <span class="transaction-type {{ t.type|lower }}">
+            <i class="fas {% if t.type == 'Deposit' %}fa-arrow-down{% else %}fa-arrow-up{% endif %}"></i>
+            {{ t.type }}
+          </span>
+          <span class="transaction-amount">₹{{ t.amount }}</span>
+        </div>
+
+        <div class="transaction-details">
+          <p><strong>Date & Time:</strong> {{ t.timestamp or t.time }}</p>
+          <p><strong>Balance (After transaction):</strong> ₹{{ t.balance_after }}</p>
+          <p><strong>Note:</strong> {{ t.note }}</p>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="no-transactions">No transactions found.</p>
+      {% endif %}
+    </div>
+
+
+
+  </main>
+  <div id="flash-container" class="flash-popup-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-popup {{ category }}">
+      <span>{{ message }}</span>
+      <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+</body>
+
+</html>

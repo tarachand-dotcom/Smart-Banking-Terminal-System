@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Account Access - Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content admin-header-content">
+      <h1><i class="fas fa-key"></i> Account Access Generator</h1>
+      <a href="{{ url_for('admin_dashboard') }}" class="btn-logout-corner">
+        <i class="fas fa-arrow-left"></i> Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="form-container">
+      <h2><i class="fas fa-user-shield"></i> Generate or Reset User Access</h2>
+      <p class="form-subtitle">Unlock accounts, generate fresh PINs, or prompt users to create a new PIN upon login.</p>
+
+      <form method="POST" action="{{ url_for('admin_generate_access') }}" class="transaction-form">
+        <!-- Account Selection -->
+        <div class="form-group">
+          <label for="accSelect"><i class="fas fa-user"></i> Select Target Account</label>
+          <select id="accSelect" name="acc_no" class="form-select" required onchange="onAccountSelected(this.value)">
+            <option value="">-- Select an account --</option>
+            {% for acc_no, details in accounts.items() %}
+            <option value="{{ acc_no }}">
+              {{ acc_no }} — {{ details.holder_name }} (Balance: ₹{{ details.balance }}) {% if details.get('new_acc') %}[PIN Setup Required]{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Action Selection -->
+        <div class="form-group pin-config-group">
+          <label><i class="fas fa-cogs"></i> Choose Access Action</label>
+          <div class="radio-options">
+            <label class="radio-card">
+              <input type="radio" name="action" value="new_pin" checked onchange="toggleAccessAction('new_pin')">
+              <div class="radio-content">
+                <strong><i class="fas fa-random"></i> Generate New 4-Digit PIN</strong>
+                <p>Generates an instant 4-digit PIN and unlocks the account.</p>
+              </div>
+            </label>
+
+            <label class="radio-card">
+              <input type="radio" name="action" value="require_setup" onchange="toggleAccessAction('require_setup')">
+              <div class="radio-content">
+                <strong><i class="fas fa-sync-alt"></i> Require User PIN Setup on Login</strong>
+                <p>Resets the account to require PIN generation when the user next logs in.</p>
+              </div>
+            </label>
+
+            <label class="radio-card">
+              <input type="radio" name="action" value="unlock" onchange="toggleAccessAction('unlock')">
+              <div class="radio-content">
+                <strong><i class="fas fa-unlock"></i> Unlock Account Only</strong>
+                <p>Clears failed login attempts and lifts any temporary lockout.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Custom PIN override field (optional) -->
+        <div class="form-group" id="customPinBox" style="display: block;">
+          <label for="customPinInput"><i class="fas fa-lock"></i> Custom PIN (Leave blank for random generation)</label>
+          <div class="input-with-action">
+            <input
+              type="text"
+              id="customPinInput"
+              name="custom_pin"
+              maxlength="4"
+              pattern="\d{4}"
+              placeholder="Leave empty for auto random PIN"
+            />
+            <button type="button" class="btn-secondary btn-inline" onclick="generateRandomPin()">
+              <i class="fas fa-dice"></i> Generate PIN
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full">
+          <i class="fas fa-check"></i> Execute Access Update
+        </button>
+
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-back">
+          <i class="fas fa-arrow-left"></i> Cancel & Back
+        </a>
+      </form>
+    </div>
+  </main>
+
+  <div id="flash-container" class="flash-popup-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-popup {{ category }}">
+      <span>{{ message }}</span>
+      <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <script>
+    function toggleAccessAction(action) {
+      const pinBox = document.getElementById('customPinBox');
+      if (action === 'new_pin') {
+        pinBox.style.display = 'block';
+      } else {
+        pinBox.style.display = 'none';
+        document.getElementById('customPinInput').value = '';
+      }
+    }
+
+    function generateRandomPin() {
+      const pin = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('customPinInput').value = pin;
+    }
+
+    function onAccountSelected(val) {
+      // Optional hook for selection
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content">
+      <h1>🏦 SecureBank</h1>
+    </div>
+  </header>
+
+  <main class="login-container">
+    <div class="login-card">
+      <h2>👨‍💼 Admin Login</h2>
+
+      <form method="POST">
+        <div class="form-group">
+          <label for="admin_pin">Admin PIN</label>
+          <input type="password" name="admin_pin" id="admin_pin" required placeholder="Enter 4-digit PIN">
+        </div>
+        <button type="submit" class="btn-primary btn-full">Login</button>
+      </form>
+
+      <div class="login-links">
+        <a href="{{ url_for('home') }}" class="btn-back">← Back</a>
+      </div>
+    </div>
+  </main>
+  <div id="flash-container" class="flash-popup-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-popup {{ category }}">
+      <span>{{ message }}</span>
+      <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+</body>
+
+</html>

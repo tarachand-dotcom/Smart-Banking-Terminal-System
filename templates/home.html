@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ATM System - Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="hero-section">
+    <div class="hero-content">
+      <h2><i class="fas fa-university"></i> Welcome to ATM System</h2>
+      <div class="action-buttons">
+        <a href="{{ url_for('user_login') }}" class="btn-primary btn-full">
+          <i class="fas fa-user"></i> User Login
+        </a>
+        <a href="{{ url_for('admin_login') }}" class="btn-secondary btn-full">
+          <i class="fas fa-user-shield"></i> Admin Login
+        </a>
+      </div>
+    </div>
+  </div>
+  <div id="flash-container" class="flash-popup-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-popup {{ category }}">
+      <span>{{ message }}</span>
+      <button class="close-flash" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+</body>
+
+</html>

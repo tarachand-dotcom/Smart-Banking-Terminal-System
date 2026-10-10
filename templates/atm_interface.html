@@ -1,0 +1,606 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ATM Banking System</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eaf0f8, #dce6f5);
+            color: #243247;
+        }
+
+        .navbar {
+            background: #173b70;
+            color: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 520px;
+            margin: 45px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10);
+        }
+
+        .container.wide {
+            max-width: 900px;
+        }
+
+        h1, h2 {
+            color: #173b70;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #68768a;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .field {
+            margin: 16px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ccd4df;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid #91b7ed;
+            border-color: #2455a4;
+        }
+
+        button, .btn {
+            display: block;
+            width: 100%;
+            padding: 13px;
+            margin-top: 12px;
+            background: #2455a4;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        button:hover, .btn:hover {
+            background: #173b70;
+        }
+
+        .btn-secondary {
+            background: #58677c;
+        }
+
+        .btn-danger {
+            background: #b83232;
+        }
+
+        .btn-success {
+            background: #21864a;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .grid .btn {
+            min-height: 75px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 9px;
+            margin: 0;
+        }
+
+        .balance {
+            text-align: center;
+            padding: 22px;
+            margin: 20px 0;
+            background: #eef5ff;
+            border-radius: 10px;
+        }
+
+        .balance .amount {
+            color: #21864a;
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 7px;
+            margin-bottom: 12px;
+            background: #e8f5e9;
+            color: #216e39;
+        }
+
+        .error {
+            padding: 12px;
+            border-radius: 7px;
+            margin-bottom: 12px;
+            background: #ffebee;
+            color: #b71c1c;
+        }
+
+        .transaction {
+            padding: 12px;
+            border-bottom: 1px solid #e2e7ee;
+            overflow-wrap: anywhere;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #68768a;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                margin: 25px auto;
+                padding: 20px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar {
+                padding: 16px 5%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <h2><i class="fas fa-university"></i> ATM Banking System</h2>
+
+    <nav>
+        <a href="{{ url_for('home') }}">Home</a>
+
+        {% if session.get('logged_in') %}
+            <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% endif %}
+    </nav>
+</header>
+
+<main class="container
+    {% if screen in ['transactions', 'list_accounts'] %}wide{% endif %}">
+
+    {% if error %}
+        <div class="error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if message %}
+        <div class="message">
+            <i class="fas fa-check-circle"></i>
+            {{ message }}
+        </div>
+    {% endif %}
+
+    <!-- HOME SCREEN -->
+    {% if screen == "home" %}
+
+        <h1>Welcome to ATM</h1>
+
+        <p class="subtitle">
+            Secure and convenient banking at your fingertips.
+        </p>
+
+        <a class="btn" href="{{ url_for('user_login') }}">
+            <i class="fas fa-user"></i> User Login
+        </a>
+
+        <a class="btn btn-secondary"
+           href="{{ url_for('admin_login') }}">
+            <i class="fas fa-user-shield"></i> Admin Login
+        </a>
+
+    <!-- USER LOGIN SCREEN -->
+    {% elif screen == "login" %}
+
+        <h1><i class="fas fa-user"></i> User Login</h1>
+
+        <p class="subtitle">Enter your account number and PIN.</p>
+
+        <form method="POST" action="{{ url_for('user_login') }}">
+
+            <div class="field">
+                <label for="account_number">Account Number</label>
+                <input id="account_number"
+                       type="text"
+                       name="account_number"
+                       value="{{ account_number|default('') }}"
+                       placeholder="Enter account number"
+                       required>
+            </div>
+
+            <div class="field">
+                <label for="pin">PIN</label>
+                <input id="pin"
+                       type="password"
+                       name="pin"
+                       inputmode="numeric"
+                       placeholder="Enter your PIN"
+                       required>
+            </div>
+
+            <button type="submit">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
+
+        <a class="btn btn-secondary" href="{{ url_for('home') }}">
+            Back to Home
+        </a>
+
+    <!-- USER DASHBOARD -->
+    {% elif screen == "dashboard" %}
+
+        <h1><i class="fas fa-tachometer-alt"></i> User Dashboard</h1>
+
+        <p class="subtitle">
+            Welcome, {{ holder_name|default('Account Holder') }}
+        </p>
+
+        <p>
+            <strong>Account Number:</strong>
+            {{ account_number|default('') }}
+        </p>
+
+        <div class="balance">
+            <div>Available Balance</div>
+            <div class="amount">
+                ₹{{ "%.2f"|format(balance|default(0)|float) }}
+            </div>
+        </div>
+
+        <div class="grid">
+            <a class="btn" href="{{ url_for('balance_enquiry') }}">
+                <i class="fas fa-wallet"></i> Balance Enquiry
+            </a>
+
+            <a class="btn btn-success" href="{{ url_for('deposit') }}">
+                <i class="fas fa-money-bill-wave"></i> Deposit
+            </a>
+
+            <a class="btn" href="{{ url_for('withdraw') }}">
+                <i class="fas fa-hand-holding-usd"></i> Withdraw
+            </a>
+
+            <a class="btn" href="{{ url_for('change_pin') }}">
+                <i class="fas fa-key"></i> Change PIN
+            </a>
+
+            <a class="btn btn-secondary"
+               href="{{ url_for('mini_statement') }}">
+                <i class="fas fa-receipt"></i> Mini Statement
+            </a>
+
+            <a class="btn btn-secondary"
+               href="{{ url_for('transactions') }}">
+                <i class="fas fa-history"></i> All Transactions
+            </a>
+        </div>
+
+        <a class="btn btn-danger" href="{{ url_for('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+
+    <!-- BALANCE ENQUIRY -->
+    {% elif screen == "balance" %}
+
+        <h1>Balance Enquiry</h1>
+
+        <p class="subtitle">
+            Account: {{ account_number|default('') }}
+        </p>
+
+        <div class="balance">
+            <div>Current Balance</div>
+            <div class="amount">
+                ₹{{ "%.2f"|format(balance|default(0)|float) }}
+            </div>
+        </div>
+
+        <a class="btn" href="{{ url_for('user_dashboard') }}">
+            Back to Dashboard
+        </a>
+
+    <!-- DEPOSIT SCREEN -->
+    {% elif screen == "deposit" %}
+
+        <h1><i class="fas fa-money-bill-wave"></i> Deposit Money</h1>
+
+        <form method="POST" action="{{ url_for('deposit') }}">
+            <div class="field">
+                <label for="deposit_amount">Amount (₹)</label>
+                <input id="deposit_amount"
+                       type="number"
+                       name="amount"
+                       min="1"
+                       step="0.01"
+                       placeholder="Enter deposit amount"
+                       required>
+            </div>
+
+            <button type="submit">Confirm Deposit</button>
+        </form>
+
+        <a class="btn btn-secondary"
+           href="{{ url_for('user_dashboard') }}">
+            Cancel
+        </a>
+
+    <!-- WITHDRAW SCREEN -->
+    {% elif screen == "withdraw" %}
+
+        <h1><i class="fas fa-hand-holding-usd"></i> Withdraw Money</h1>
+
+        <form method="POST" action="{{ url_for('withdraw') }}">
+            <div class="field">
+                <label for="withdraw_amount">Amount (₹)</label>
+                <input id="withdraw_amount"
+                       type="number"
+                       name="amount"
+                       min="1"
+                       step="0.01"
+                       placeholder="Enter withdrawal amount"
+                       required>
+            </div>
+
+            <button type="submit">Confirm Withdrawal</button>
+        </form>
+
+        <a class="btn btn-secondary"
+           href="{{ url_for('user_dashboard') }}">
+            Cancel
+        </a>
+
+    <!-- CHANGE PIN SCREEN -->
+    {% elif screen == "change_pin" %}
+
+        <h1><i class="fas fa-key"></i> Change PIN</h1>
+
+        <form method="POST" action="{{ url_for('change_pin') }}">
+            <div class="field">
+                <label for="old_pin">Current PIN</label>
+                <input id="old_pin"
+                       type="password"
+                       name="old_pin"
+                       inputmode="numeric"
+                       required>
+            </div>
+
+            <div class="field">
+                <label for="new_pin">New PIN</label>
+                <input id="new_pin"
+                       type="password"
+                       name="new_pin"
+                       inputmode="numeric"
+                       required>
+            </div>
+
+            <button type="submit">Update PIN</button>
+        </form>
+
+        <a class="btn btn-secondary"
+           href="{{ url_for('user_dashboard') }}">
+            Cancel
+        </a>
+
+    <!-- MINI STATEMENT -->
+    {% elif screen == "mini_statement" %}
+
+        <h1><i class="fas fa-receipt"></i> Mini Statement</h1>
+
+        {% for transaction in transactions|default([]) %}
+            <div class="transaction">
+                {{ transaction }}
+            </div>
+        {% else %}
+            <p class="subtitle">No transactions available.</p>
+        {% endfor %}
+
+        <a class="btn" href="{{ url_for('user_dashboard') }}">
+            Back to Dashboard
+        </a>
+
+    <!-- FULL TRANSACTION HISTORY -->
+    {% elif screen == "transactions" %}
+
+        <h1><i class="fas fa-history"></i> Transaction History</h1>
+
+        {% for transaction in transactions|default([]) %}
+            <div class="transaction">
+                {{ transaction }}
+            </div>
+        {% else %}
+            <p class="subtitle">No transactions available.</p>
+        {% endfor %}
+
+        <a class="btn" href="{{ url_for('user_dashboard') }}">
+            Back to Dashboard
+        </a>
+
+    <!-- ADMIN LOGIN -->
+    {% elif screen == "admin_login" %}
+
+        <h1><i class="fas fa-user-shield"></i> Admin Login</h1>
+
+        <form method="POST" action="{{ url_for('admin_login') }}">
+            <div class="field">
+                <label for="admin_pin">Admin PIN</label>
+                <input id="admin_pin"
+                       type="password"
+                       name="admin_pin"
+                       required>
+            </div>
+
+            <button type="submit">Admin Login</button>
+        </form>
+
+        <a class="btn btn-secondary" href="{{ url_for('home') }}">
+            Back to Home
+        </a>
+
+    <!-- ADMIN DASHBOARD -->
+    {% elif screen == "admin_dashboard" %}
+
+        <h1><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
+
+        <a class="btn" href="{{ url_for('list_accounts') }}">
+            <i class="fas fa-users"></i> List All Accounts
+        </a>
+
+        <a class="btn" href="{{ url_for('generate_pin') }}">
+            <i class="fas fa-key"></i> Generate PIN
+        </a>
+
+        <a class="btn btn-danger" href="{{ url_for('remove_account') }}">
+            <i class="fas fa-user-minus"></i> Remove Account
+        </a>
+
+        <a class="btn btn-secondary" href="{{ url_for('logout') }}">
+            Logout
+        </a>
+
+    <!-- LIST ACCOUNTS -->
+    {% elif screen == "list_accounts" %}
+
+        <h1>All Accounts</h1>
+
+        {% for account in accounts|default([]) %}
+            <div class="transaction">{{ account }}</div>
+        {% else %}
+            <p class="subtitle">No account information available.</p>
+        {% endfor %}
+
+        <a class="btn" href="{{ url_for('admin_dashboard') }}">
+            Back to Admin Dashboard
+        </a>
+
+    <!-- GENERATE PIN -->
+    {% elif screen == "generate_pin" %}
+
+        <h1>Generate PIN</h1>
+
+        <form method="POST" action="{{ url_for('generate_pin') }}">
+            <div class="field">
+                <label for="account_number">Account Number</label>
+                <input id="account_number"
+                       type="text"
+                       name="account_number"
+                       required>
+            </div>
+
+            <button type="submit">Generate PIN</button>
+        </form>
+
+        <a class="btn btn-secondary"
+           href="{{ url_for('admin_dashboard') }}">
+            Back
+        </a>
+
+    <!-- REMOVE ACCOUNT -->
+    {% elif screen == "remove_account" %}
+
+        <h1>Remove Account</h1>
+
+        <form method="POST" action="{{ url_for('remove_account') }}">
+            <div class="field">
+                <label for="account_number">Account Number</label>
+                <input id="account_number"
+                       type="text"
+                       name="account_number"
+                       required>
+            </div>
+
+            <button class="btn-danger" type="submit">
+                Remove Account
+            </button>
+        </form>
+
+        <a class="btn btn-secondary"
+           href="{{ url_for('admin_dashboard') }}">
+            Cancel
+        </a>
+
+    <!-- UNKNOWN SCREEN -->
+    {% else %}
+
+        <h1>Page Not Found</h1>
+        <p class="subtitle">The requested ATM screen does not exist.</p>
+
+        <a class="btn" href="{{ url_for('home') }}">
+            Return Home
+        </a>
+
+    {% endif %}
+
+</main>
+
+<footer class="footer">
+    ATM Banking System
+</footer>
+
+</body>
+</html>
